@@ -21,7 +21,13 @@ const Login: React.FC = () => {
     try {
       const success = await login(username, password);
       if (success) {
-        navigate('/construction');
+        const role = localStorage.getItem('userRole');
+        if (role === 'admin') {
+          navigate('/admin');
+        } else {
+
+          navigate('/construction');
+        }
       } else {
         setLoginError('Usuario o contraseña incorrectos');
       }

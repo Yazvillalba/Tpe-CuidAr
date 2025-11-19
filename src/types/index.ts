@@ -16,3 +16,10 @@ export interface AuthContextType {
   isAuthenticated: boolean;
 }
 
+export interface DashboardStats {
+  totalUsers: number;
+  workers: number;
+  families: number;
+  activeUsers: number;
+}
+

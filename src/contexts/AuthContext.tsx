@@ -117,7 +117,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated
   };
 
-
   if (loading) {
     return <div>Cargando...</div>;
   }
