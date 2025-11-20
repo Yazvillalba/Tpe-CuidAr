@@ -1,10 +1,13 @@
 import React from 'react';
 import { Users } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard: React.FC = () => {
+  const { user } = useAuth();
 
+  
   const getDashboardStats = () => {
-
+ 
     const allUsers = [
       { role: 'admin', status: 'active' },
       { role: 'worker', status: 'active' },

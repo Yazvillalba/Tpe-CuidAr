@@ -87,12 +87,20 @@
     background-color: #d1fae5;
 }
 
+.bg-gray-50 {
+    background-color: #f9fafb;
+}
+
 .text-purple-600 {
     color: #9333ea;
 }
 
 .text-emerald-600 {
     color: #10b981;
+}
+
+.text-sky-600 {
+    color: #0284c7;
 }
 
 .border-white\/20 {

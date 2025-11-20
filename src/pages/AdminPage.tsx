@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Dashboard from '../components/Dashboard';
-import UsersConstructionPage from './UsersConstructionPage';
+import UserTable from '../components/UserTable';
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users'>('dashboard');
@@ -11,7 +11,7 @@ const AdminPage: React.FC = () => {
       case 'dashboard':
         return <Dashboard />;
       case 'users':
-        return <UsersConstructionPage />;
+        return <UserTable />;
       default:
         return <Dashboard />;
     }

@@ -7,6 +7,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+
 const HARDCODED_USERS: User[] = [
   { 
     username: 'admin', 
@@ -16,7 +17,7 @@ const HARDCODED_USERS: User[] = [
     role: 'admin', 
     email: 'admin@cuidar.com', 
     status: 'active', 
-    image: 'Imagenes/Admin.png' 
+    image: '/Imagenes/Admin.png' 
   },
   { 
     username: 'cuidador1', 
@@ -26,7 +27,7 @@ const HARDCODED_USERS: User[] = [
     role: 'worker', 
     email: 'maria@cuidar.com', 
     status: 'active', 
-    image: 'Imagenes/Trabajador.jpg' 
+    image: '/Imagenes/Trabajador.jpg' 
   },
   { 
     username: 'cuidador2', 
@@ -36,7 +37,7 @@ const HARDCODED_USERS: User[] = [
     role: 'worker', 
     email: 'ana@cuidar.com', 
     status: 'inactive', 
-    image: 'Imagenes/Trabajadora1.avif' 
+    image: '/Imagenes/Trabajadora1.avif' 
   },
   { 
     username: 'familia1', 
@@ -46,7 +47,7 @@ const HARDCODED_USERS: User[] = [
     role: 'family', 
     email: 'carlos@cuidar.com', 
     status: 'active', 
-    image: 'Imagenes/Familia.jpg' 
+    image: '/Imagenes/Familia.jpg' 
   },
   { 
     username: 'familia3', 
@@ -56,7 +57,7 @@ const HARDCODED_USERS: User[] = [
     role: 'family', 
     email: 'roberto@cuidar.com', 
     status: 'inactive', 
-    image: 'Imagenes/familia2.jpg' 
+    image: '/Imagenes/familia2.jpg' 
   }
 ];
 
@@ -66,7 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
+  
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const username = localStorage.getItem('username');
     
@@ -83,7 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
-
+    
     await new Promise(resolve => setTimeout(resolve, 300));
     
     const foundUser = HARDCODED_USERS.find(
@@ -116,6 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     isAuthenticated
   };
+
 
   if (loading) {
     return <div>Cargando...</div>;
