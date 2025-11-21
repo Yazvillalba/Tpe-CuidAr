@@ -1,61 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UserPlus, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useUsers } from '../contexts/UsersContext';
 import type { User } from '../types';
-
-
-const HARDCODED_USERS: User[] = [
-  { 
-    username: 'admin', 
-    password: 'admin123', 
-    firstName: 'Administrador', 
-    lastName: 'Sistema', 
-    role: 'admin', 
-    email: 'admin@cuidar.com', 
-    status: 'active', 
-    image: '/Imagenes/Admin.png' 
-  },
-  { 
-    username: 'cuidador1', 
-    password: 'cuidador123', 
-    firstName: 'María', 
-    lastName: 'González', 
-    role: 'worker', 
-    email: 'maria@cuidar.com', 
-    status: 'active', 
-    image: '/Imagenes/Trabajador.jpg' 
-  },
-  { 
-    username: 'cuidador2', 
-    password: 'cuidador456', 
-    firstName: 'Ana', 
-    lastName: 'López', 
-    role: 'worker', 
-    email: 'ana@cuidar.com', 
-    status: 'inactive', 
-    image: '/Imagenes/Trabajadora1.avif' 
-  },
-  { 
-    username: 'familia1', 
-    password: 'familia123', 
-    firstName: 'Carlos', 
-    lastName: 'Rodríguez', 
-    role: 'family', 
-    email: 'carlos@cuidar.com', 
-    status: 'active', 
-    image: '/Imagenes/Familia.jpg' 
-  },
-  { 
-    username: 'familia3', 
-    password: 'familia789', 
-    firstName: 'Roberto', 
-    lastName: 'Pérez', 
-    role: 'family', 
-    email: 'roberto@cuidar.com', 
-    status: 'inactive', 
-    image: '/Imagenes/familia2.jpg' 
-  }
-];
+import CreateUserModal from './CreateUserModal';
+import EditUserModal from './EditUserModal';
+import DeleteUserModal from './DeleteUserModal';
 
 const getRoleText = (role: string) => {
   const roleLabels: Record<string, string> = {
@@ -91,11 +41,35 @@ const getDefaultImageForRole = (role: string) => {
 
 const UserTable: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const users = HARDCODED_USERS;
+  const { users, toggleUserStatus } = useUsers();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
- 
-  const handleButtonClick = () => {
-  
+  const handleCreateUser = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleToggleStatus = (username: string) => {
+    toggleUserStatus(username);
+  };
+
+  const handleModalClose = () => {
+    setShowCreateModal(false);
+    setShowEditModal(false);
+    setShowDeleteModal(false);
+    setSelectedUser(null);
   };
 
   return (
@@ -105,7 +79,7 @@ const UserTable: React.FC = () => {
           <h3 className="h5 fw-semibold text-gray-900 mb-0">Gestión de Usuarios</h3>
           <button
             className="btn btn-gradient d-flex align-items-center px-3 py-2 rounded-xl"
-            onClick={handleButtonClick}
+            onClick={handleCreateUser}
           >
             <UserPlus className="me-2" style={{ width: '1rem', height: '1rem' }} />
             Crear Usuario
@@ -156,7 +130,7 @@ const UserTable: React.FC = () => {
                   <td className="px-4 py-4">
                     <button 
                       className={`btn btn-sm ${userStatus.class} rounded-pill small fw-semibold`}
-                      onClick={handleButtonClick}
+                      onClick={() => handleToggleStatus(user.username)}
                     >
                       {userStatus.text}
                     </button>
@@ -166,14 +140,14 @@ const UserTable: React.FC = () => {
                       <button
                         className="btn btn-sm text-sky-600 p-1"
                         title="Editar"
-                        onClick={handleButtonClick}
+                        onClick={() => handleEditUser(user)}
                       >
                         <Edit style={{ width: '1rem', height: '1rem' }} />
                       </button>
                       <button
                         className="btn btn-sm text-red-600 p-1"
                         title="Eliminar"
-                        onClick={handleButtonClick}
+                        onClick={() => handleDeleteUser(user)}
                       >
                         <Trash2 style={{ width: '1rem', height: '1rem' }} />
                       </button>
@@ -185,6 +159,24 @@ const UserTable: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      <CreateUserModal 
+        show={showCreateModal} 
+        onHide={handleModalClose}
+        onSuccess={handleModalClose}
+      />
+      <EditUserModal 
+        show={showEditModal} 
+        onHide={handleModalClose}
+        user={selectedUser}
+        onSuccess={handleModalClose}
+      />
+      <DeleteUserModal 
+        show={showDeleteModal} 
+        onHide={handleModalClose}
+        user={selectedUser}
+        onSuccess={handleModalClose}
+      />
     </div>
   );
 };

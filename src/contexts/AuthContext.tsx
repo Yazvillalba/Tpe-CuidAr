@@ -66,13 +66,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const getUsersFromStorage = (): User[] => {
+    const storedUsers = localStorage.getItem('cuidarUsers');
+    if (storedUsers) {
+      try {
+        return JSON.parse(storedUsers);
+      } catch (error) {
+        console.error('Error loading users from storage:', error);
+        return HARDCODED_USERS;
+      }
+    }
+    return HARDCODED_USERS;
+  };
+
   useEffect(() => {
   
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const username = localStorage.getItem('username');
     
     if (isLoggedIn && username) {
-      const foundUser = HARDCODED_USERS.find(u => u.username === username);
+      const users = getUsersFromStorage();
+      const foundUser = users.find(u => u.username === username);
       if (foundUser && foundUser.status === 'active') {
         setUser(foundUser);
         setIsAuthenticated(true);
@@ -87,7 +101,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    const foundUser = HARDCODED_USERS.find(
+    const users = getUsersFromStorage();
+    const foundUser = users.find(
       u => u.username === username && u.password === password
     );
     
