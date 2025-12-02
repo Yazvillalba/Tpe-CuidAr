@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { UserPlus, Edit, Trash2 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import { useUsers } from '../contexts/UsersContext';
 import type { User } from '../types';
 import CreateUserModal from './CreateUserModal';
@@ -40,7 +39,6 @@ const getDefaultImageForRole = (role: string) => {
 };
 
 const UserTable: React.FC = () => {
-  const { user: currentUser } = useAuth();
   const { users, toggleUserStatus, refreshUsers } = useUsers();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);

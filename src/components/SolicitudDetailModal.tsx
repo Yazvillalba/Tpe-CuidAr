@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Briefcase, MapPin, DollarSign, Clock, User, FileText } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Clock, User, FileText } from 'lucide-react';
 import type { Solicitud } from '../types/worker';
 
 interface SolicitudDetailModalProps {
