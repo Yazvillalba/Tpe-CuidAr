@@ -1,11 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Bell, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../utils/api';
+import type { User } from '../types';
 
 const Header: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user: contextUser, logout } = useAuth();
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(contextUser);
+
+  useEffect(() => {
+    const refreshUserData = async () => {
+      if (contextUser?.username) {
+        try {
+          const response = await api.get<User>(`/auth/user/${contextUser.username}`);
+          if (response.success && response.user) {
+            setUser(response.user);
+          }
+        } catch (error) {
+          console.error('Error al refrescar datos del usuario:', error);
+          setUser(contextUser);
+        }
+      } else {
+        setUser(contextUser);
+      }
+    };
+
+    refreshUserData();
+  }, [contextUser]);
 
   const handleLogout = () => {
     logout();
@@ -44,7 +67,9 @@ const Header: React.FC = () => {
             <div className="d-flex align-items-center">
               <div className="text-end me-3">
                 <p className="small fw-medium text-gray-900 mb-0">
-                  {user ? `${user.firstName} ${user.lastName}` : ''}
+                  {user && user.firstName && user.lastName 
+                    ? `${user.firstName} ${user.lastName}` 
+                    : user?.username || 'Usuario'}
                 </p>
                 <span className={`text-xs px-2 py-1 rounded-full ${roleInfo.class}`}>
                   {roleInfo.text}

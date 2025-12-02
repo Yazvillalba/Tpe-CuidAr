@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { UsersProvider } from './contexts/UsersContext';
 import Login from './components/Login';
 import AdminPage from './pages/AdminPage';
+import WorkerPage from './pages/WorkerPage';
 import ConstructionPage from './pages/ConstructionPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -20,6 +21,14 @@ const App: React.FC = () => {
                 element={
                   <ProtectedRoute requiredRole="admin">
                     <AdminPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/worker" 
+                element={
+                  <ProtectedRoute requiredRole="worker">
+                    <WorkerPage />
                   </ProtectedRoute>
                 } 
               />

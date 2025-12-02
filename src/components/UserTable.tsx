@@ -41,11 +41,12 @@ const getDefaultImageForRole = (role: string) => {
 
 const UserTable: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const { users, toggleUserStatus } = useUsers();
+  const { users, toggleUserStatus, refreshUsers } = useUsers();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [imageRefreshKey, setImageRefreshKey] = useState(0);
 
   const handleCreateUser = () => {
     setShowCreateModal(true);
@@ -65,11 +66,14 @@ const UserTable: React.FC = () => {
     toggleUserStatus(username);
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = async () => {
     setShowCreateModal(false);
     setShowEditModal(false);
     setShowDeleteModal(false);
     setSelectedUser(null);
+
+    await refreshUsers();
+    setImageRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -102,6 +106,7 @@ const UserTable: React.FC = () => {
               const rolColorClass = getRolColorClass(user.role);
               const userStatus = getUserStatus(user.status);
               const imageSrc = user.image || getDefaultImageForRole(user.role);
+              const imageSrcWithCache = imageSrc ? `${imageSrc}?v=${imageRefreshKey}-${user.username}` : '';
 
               return (
                 <tr key={user.username}>
@@ -109,7 +114,7 @@ const UserTable: React.FC = () => {
                     <div className="d-flex align-items-center gap-3">
                       {imageSrc && (
                         <img 
-                          src={imageSrc} 
+                          src={imageSrcWithCache || imageSrc} 
                           alt={user.role} 
                           style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '50%' }}
                           onError={(e) => {

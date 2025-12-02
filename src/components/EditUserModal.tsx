@@ -3,6 +3,14 @@ import { createPortal } from 'react-dom';
 import { Edit, X, User as UserIcon, Mail, Lock, Image as ImageIcon, Save } from 'lucide-react';
 import type { User } from '../types';
 import { useUsers } from '../contexts/UsersContext';
+import api from '../utils/api';
+
+interface Role {
+  idRol: number;
+  nombreRol: string;
+  descripcion?: string;
+  estado?: string;
+}
 
 interface EditUserModalProps {
   show: boolean;
@@ -25,6 +33,36 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ show, onHide, user, onSuc
   });
   const [originalUsername, setOriginalUsername] = useState('');
   const [error, setError] = useState('');
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        setLoadingRoles(true);
+        const response = await api.get<Role>('/roles');
+        if (response.success && response.roles) {
+          setRoles(response.roles as Role[]);
+        } else {
+          throw new Error('No se pudieron cargar los roles');
+        }
+      } catch (err: any) {
+        console.error('Error al cargar roles:', err);
+
+        setRoles([
+          { idRol: 1, nombreRol: 'admin' },
+          { idRol: 2, nombreRol: 'worker' },
+          { idRol: 3, nombreRol: 'family' },
+        ]);
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    if (show) {
+      fetchRoles();
+    }
+  }, [show]);
 
   useEffect(() => {
     if (user) {
@@ -75,29 +113,61 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ show, onHide, user, onSuc
       return;
     }
 
-    let imageBase64 = user.image || '';
+    let imagePath: string | undefined = undefined;
+    const imagenAnterior = user.image;
+    
+
     if (formData.profileImage) {
-      imageBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(formData.profileImage!);
-      });
+      try {
+        const uploadResponse = await api.uploadFile('/upload/image', formData.profileImage);
+        if (uploadResponse.success && uploadResponse.path) {
+          imagePath = uploadResponse.path;
+          
+          if (imagenAnterior && imagenAnterior !== imagePath && imagenAnterior.startsWith('/Imagenes/')) {
+            try {
+              const filename = imagenAnterior.replace('/Imagenes/', '');
+              await api.delete(`/upload/image/${filename}`);
+            } catch (deleteErr: any) {
+              console.error('Error al eliminar imagen anterior:', deleteErr);
+            }
+          }
+        } else {
+          setError('Error al subir la imagen: No se recibió la ruta de la imagen');
+          return;
+        }
+      } catch (err: any) {
+        setError('Error al subir la imagen: ' + (err.message || 'Error desconocido'));
+        return;
+      }
+    } else {
+      imagePath = user.image || undefined;
     }
 
-    const updatedUser: User = {
+    const updatedUser: Partial<User> = {
       username: formData.username,
       email: formData.email,
       firstName: formData.firstName,
       lastName: formData.lastName,
       role: formData.role as User['role'],
       status: formData.status,
-      image: imageBase64 || undefined,
-      password: formData.password || user.password
+      image: imagePath,
     };
-
-    updateUser(originalUsername, updatedUser);
     
+    if (formData.password && formData.password.trim() !== '') {
+      updatedUser.password = formData.password;
+    }   
+
+    try {
+      const success = await updateUser(originalUsername, updatedUser);
+      if (!success) {
+        setError('Error al actualizar el usuario. Por favor, intente nuevamente.');
+        return;
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error al actualizar el usuario. Por favor, intente nuevamente.');
+      return;
+    }
+
     setFormData({
       username: '',
       email: '',
@@ -110,7 +180,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ show, onHide, user, onSuc
     });
     
     onHide();
-    if (onSuccess) onSuccess();
+    
+    setTimeout(() => {
+      if (onSuccess) onSuccess();
+    }, 100);
   };
 
   if (!show || !user) return null;
@@ -235,11 +308,23 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ show, onHide, user, onSuc
                     value={formData.role}
                     onChange={handleChange}
                     required
+                    disabled={loadingRoles}
                   >
-                    <option value="">Seleccionar rol</option>
-                    <option value="admin">Administrador</option>
-                    <option value="worker">Cuidador</option>
-                    <option value="family">Familia</option>
+                    <option value="">{loadingRoles ? 'Cargando roles...' : 'Seleccionar rol'}</option>
+                    {roles.map((role) => {
+
+                      const roleLabels: Record<string, string> = {
+                        'admin': 'Administrador',
+                        'worker': 'Cuidador',
+                        'family': 'Familia'
+                      };
+                      const roleLabel = roleLabels[role.nombreRol] || role.nombreRol;
+                      return (
+                        <option key={role.idRol} value={role.nombreRol}>
+                          {roleLabel}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 

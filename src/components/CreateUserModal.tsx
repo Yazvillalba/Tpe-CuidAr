@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { UserPlus, X, User as UserIcon, Mail, Lock, Image as ImageIcon } from 'lucide-react';
 import type { User } from '../types';
 import { useUsers } from '../contexts/UsersContext';
+import api from '../utils/api';
 
 interface CreateUserModalProps {
   show: boolean;
@@ -51,14 +52,18 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ show, onHide, onSucce
       return;
     }
 
-    let imageBase64 = '';
+    let imagePath: string | undefined = undefined;
+    
     if (formData.profileImage) {
-      imageBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(formData.profileImage!);
-      });
+      try {
+        const uploadResponse = await api.uploadFile('/upload/image', formData.profileImage);
+        if (uploadResponse.success && uploadResponse.path) {
+          imagePath = uploadResponse.path;
+        }
+      } catch (err: any) {
+        setError('Error al subir la imagen: ' + (err.message || 'Error desconocido'));
+        return;
+      }
     }
 
     const newUser: User = {
@@ -69,24 +74,30 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ show, onHide, onSucce
       lastName: formData.lastName,
       role: formData.role as User['role'],
       status: 'active',
-      image: imageBase64 || undefined
+      image: imagePath
     };
 
-    addUser(newUser);
-    
-
-    setFormData({
-      username: '',
-      email: '',
-      firstName: '',
-      lastName: '',
-      role: '' as User['role'] | '',
-      password: '',
-      profileImage: null
-    });
-    
-    onHide();
-    if (onSuccess) onSuccess();
+    try {
+      const success = await addUser(newUser);
+      if (success) {
+        setFormData({
+          username: '',
+          email: '',
+          firstName: '',
+          lastName: '',
+          role: '' as User['role'] | '',
+          password: '',
+          profileImage: null
+        });
+        
+        onHide();
+        if (onSuccess) onSuccess();
+      } else {
+        setError('Error al crear el usuario. Por favor, intente nuevamente.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error al crear el usuario. Por favor, intente nuevamente.');
+    }
   };
 
   if (!show) return null;

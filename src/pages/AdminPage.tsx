@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import Dashboard from '../components/Dashboard';
 import UserTable from '../components/UserTable';
+import { useAuth } from '../contexts/AuthContext';
 
 const AdminPage: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users'>('dashboard');
+  
+  const userName = user ? `${user.firstName} ${user.lastName}` : 'Administrador';
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -23,7 +27,7 @@ const AdminPage: React.FC = () => {
       
       <main className="container-fluid max-w-7xl mx-auto px-4 py-4">
         <div className="mb-4">
-          <h2 className="display-6 fw-bold text-gray-900 mb-2">Bienvenido, Administrador</h2>
+          <h2 className="display-6 fw-bold text-gray-900 mb-2">Bienvenido, {userName}</h2>
           <p className="text-gray-600">Gestiona usuarios y supervisa la plataforma CuidAR</p>
         </div>
 

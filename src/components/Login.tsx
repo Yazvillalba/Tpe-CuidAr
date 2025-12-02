@@ -25,6 +25,8 @@ const Login: React.FC = () => {
         const role = localStorage.getItem('userRole');
         if (role === 'admin') {
           navigate('/admin');
+        } else if (role === 'worker') {
+          navigate('/worker');
         } else {
           
           navigate('/construction');
@@ -33,7 +35,8 @@ const Login: React.FC = () => {
         setLoginError('Usuario o contraseña incorrectos');
       }
     } catch (error: any) {
-      setLoginError('Error al iniciar sesión');
+      console.error('Login error:', error);
+      setLoginError(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setIsLoading(false);
     }

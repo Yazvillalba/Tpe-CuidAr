@@ -7,6 +7,7 @@ export interface User {
   email: string;
   status: 'active' | 'inactive';
   image?: string;
+  idUsuario?: number;
 }
 
 export interface AuthContextType {
