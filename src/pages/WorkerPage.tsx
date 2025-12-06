@@ -36,10 +36,23 @@ const WorkerPage: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (cuidadorData?.idCuidador) {
-      loadDashboardData();
+    if (cuidadorData) {
+
+      setDashboardStats(prev => ({
+        ...prev,
+        calificacion: cuidadorData.calificacion || 0,
+        tarifaPorHora: cuidadorData.tarifaPorHora || 0,
+      }));
+      
+
+      if (cuidadorData.idCuidador) {
+        loadDashboardData();
+      } else {
+
+        setLoading(false);
+      }
     }
-  }, [cuidadorData?.idCuidador]);
+  }, [cuidadorData]);
 
   const loadDashboardData = async () => {
     try {
@@ -68,6 +81,7 @@ const WorkerPage: React.FC = () => {
   const loadCuidadorData = async () => {
     if (user?.idUsuario) {
       try {
+        setLoading(true);
         const response = await api.get<Cuidador>(`/cuidadores/usuario/${user.idUsuario}`);
       if (response.success && (response as any).cuidador) {
         const cuidador = (response as any).cuidador as Cuidador;
@@ -78,6 +92,7 @@ const WorkerPage: React.FC = () => {
           tarifaPorHora: cuidador.tarifaPorHora || 0,
         }));
         } else {
+
           setCuidadorData({
             idCuidador: 0,
             idUsuario: user.idUsuario,
@@ -100,9 +115,11 @@ const WorkerPage: React.FC = () => {
               image: user.image,
             },
           });
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error cargando datos del cuidador:', error);
+
         setCuidadorData({
           idCuidador: 0,
           idUsuario: user.idUsuario,
@@ -125,6 +142,7 @@ const WorkerPage: React.FC = () => {
             image: user.image,
           },
         });
+        setLoading(false);
       }
     }
   };
@@ -242,6 +260,12 @@ const WorkerPage: React.FC = () => {
       if (response.success && (response as any).cuidador) {
         const cuidador = (response as any).cuidador as Cuidador;
         setCuidadorData(cuidador);
+
+        setDashboardStats(prev => ({
+          ...prev,
+          calificacion: cuidador.calificacion || 0,
+          tarifaPorHora: cuidador.tarifaPorHora || 0,
+        }));
         setIsEditing(false);
         await loadDashboardData();
         showToast('Perfil actualizado exitosamente', 'success');
@@ -252,9 +276,46 @@ const WorkerPage: React.FC = () => {
     }
   };
 
+  const isProfileIncomplete = () => {
+    if (!cuidadorData) return true;
+
+    return !cuidadorData.idCuidador || 
+           !cuidadorData.telefono || 
+           !cuidadorData.ubicacion || 
+           !cuidadorData.descripcion || 
+           !cuidadorData.tipoCuidado ||
+           cuidadorData.tarifaPorHora === 0;
+  };
+
   const renderDashboard = () => {
-    if (loading) {
+    if (loading && !cuidadorData) {
       return <div className="text-center py-5">Cargando...</div>;
+    }
+
+
+    if (isProfileIncomplete()) {
+      return (
+        <div className="glass rounded-2xl p-5 shadow-lg">
+          <div className="text-center">
+            <div className="d-inline-flex align-items-center justify-content-center rounded-2xl mb-4 shadow corazon" style={{ width: '5rem', height: '5rem' }}>
+              <Briefcase className="text-white" style={{ width: '2.5rem', height: '2.5rem' }} />
+            </div>
+            <h3 className="h3 fw-bold text-gray-900 mb-3">Completa tu perfil</h3>
+            <p className="text-gray-600 mb-4 fs-5">
+              Para poder acceder a todas las funcionalidades y postularte a solicitudes de trabajo, necesitas completar tu perfil de cuidador.
+            </p>
+            <p className="text-gray-500 mb-4 small">
+              Completa información como tu teléfono, ubicación, experiencia y tarifa para que las familias puedan encontrarte.
+            </p>
+            <button
+              className="btn btn-primary btn-lg px-4"
+              onClick={() => setActiveTab('perfil')}
+            >
+              Ir a Mi Perfil
+            </button>
+          </div>
+        </div>
+      );
     }
 
     return (
